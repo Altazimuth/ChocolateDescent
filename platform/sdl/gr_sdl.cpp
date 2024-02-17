@@ -53,6 +53,7 @@ int SwapInterval = 0;
 
 SDL_Rect screenRectangle, sourceRectangle;
 SDL_Surface* softwareSurf = nullptr;
+static SDL_ScaleMode scaleMode = SDL_SCALEMODE_NEAREST;
 
 uint32_t localPal[256];
 
@@ -85,6 +86,8 @@ int plat_init()
 
 int plat_create_window()
 {
+	SDL_PropertiesID props = SDL_CreateProperties();
+
 	//Attributes like this must be set before windows are created, apparently. 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -92,20 +95,31 @@ int plat_create_window()
 
 	CurWindowWidth = WindowWidth;
 	CurWindowHeight = WindowHeight;
-	int flags = SDL_WINDOW_HIDDEN;
+	SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, SDL_TRUE);
 	if (!NoOpenGL)
-		flags |= SDL_WINDOW_OPENGL;
+		SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_TRUE);
 	else
 		usingSoftware = true;
 	if (Fullscreen)
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_BORDERLESS;
+	{
+		SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FULLSCREEN_BOOLEAN, SDL_TRUE);
+		SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, SDL_TRUE);
+	}
+
+	SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, titleMsg);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_CENTERED);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_CENTERED);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, WindowWidth);
+	SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, WindowHeight);
+
 	//SDL is good, create a game window
-	gameWindow = SDL_CreateWindow(titleMsg, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowWidth, WindowHeight, flags);
+	gameWindow = SDL_CreateWindowWithProperties(props);
 	//int result = SDL_CreateWindowAndRenderer(WindowWidth, WindowHeight, flags, &gameWindow, &renderer);
 
 	if (!gameWindow)
 	{
 		Error("Error creating game window: %s\n", SDL_GetError());
+		SDL_DestroyProperties(props);
 		return 1;
 	}
 	//where else do i do this...
@@ -117,11 +131,12 @@ int plat_create_window()
 		SDL_DestroyWindow(gameWindow);
 		usingSoftware = true;
 
-		flags &= ~SDL_WINDOW_OPENGL;
-		gameWindow = SDL_CreateWindow(titleMsg, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WindowWidth, WindowHeight, flags);
+		SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, SDL_FALSE);
+		gameWindow = SDL_CreateWindowWithProperties(props);
 		if (!gameWindow)
 		{
 			Error("Error creating game window, after falling back to software: %s\n", SDL_GetError());
+			SDL_DestroyProperties(props);
 			return 1;
 		}
 	}
@@ -130,6 +145,8 @@ int plat_create_window()
 
 	if (Fullscreen)
 		SDL_GetWindowSize(gameWindow, &CurWindowWidth, &CurWindowHeight);
+
+	SDL_DestroyProperties(props);
 
 	return 0;
 }
@@ -187,11 +204,11 @@ void I_SetScreenRect(int w, int h)
 	{
 		if (BestFit == FITMODE_FILTERED && h <= 400)
 		{
-			SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+			scaleMode = SDL_SCALEMODE_LINEAR;
 			w *= 2; h *= 2;
 		}
 		else
-			SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+			scaleMode = SDL_SCALEMODE_NEAREST;
 	}
 
 	if (BestFit == FITMODE_BEST)
@@ -218,7 +235,7 @@ void I_SetScreenRect(int w, int h)
 		if (softwareSurf)
 			SDL_DestroySurface(softwareSurf);
 		
-		softwareSurf = SDL_CreateRGBSurface(0, w, h, 32, 0, 0, 0, 0);
+		softwareSurf = SDL_CreateSurface(w, h, SDL_GetPixelFormatEnumForMasks(32, 0, 0, 0, 0));
 		if (!softwareSurf)
 			Error("Error creating software surface: %s\n", SDL_GetError());
 	}
@@ -228,7 +245,7 @@ void plat_toggle_fullscreen()
 {
 	if (Fullscreen)
 	{
-		SDL_SetWindowFullscreen(gameWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		SDL_SetWindowFullscreen(gameWindow, SDL_TRUE);
 		SDL_GetWindowSize(gameWindow, &CurWindowWidth, &CurWindowHeight);
 	}
 	else
@@ -345,16 +362,9 @@ void plat_do_events()
 		switch (ev.type)
 		{
 			//Flush input if you click the window, so that you don't abort your game when clicking back in at the ESC menu. heh...
-		case SDL_WINDOWEVENT:
-		{
-			SDL_WindowEvent winEv = ev.window;
-			switch (winEv.event)
-			{
-			case SDL_EVENT_WINDOW_FOCUS_GAINED:
-				SDL_FlushEvents(SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP);
-				break;
-			}
-		}
+		case SDL_EVENT_WINDOW_FOCUS_GAINED:
+			SDL_FlushEvents(SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP);
+			break;
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		case SDL_EVENT_MOUSE_BUTTON_UP:
 			I_MouseHandler(ev.button.button, ev.button.state);
@@ -395,7 +405,7 @@ void plat_set_mouse_relative_mode(int state)
 	SDL_SetRelativeMouseMode((SDL_bool)state);
 	if (state && !formerState)
 	{
-		int bogusX, bogusY;
+		float bogusX, bogusY;
 		SDL_GetRelativeMouseState(&bogusX, &bogusY);
 	}
 	else if (!state && formerState)
@@ -474,7 +484,7 @@ void I_SoftwareBlit()
 
 	SDL_Surface* windowSurf = SDL_GetWindowSurface(gameWindow);
 	//SDL_BlitSurface(softwareSurf, &sourceRectangle, windowSurf, &sourceRectangle);
-	SDL_BlitScaled(softwareSurf, &sourceRectangle, windowSurf, &screenRectangle);
+	SDL_BlitSurfaceUncheckedScaled(softwareSurf, &sourceRectangle, windowSurf, &screenRectangle, scaleMode);
 }
 
 void plat_present_canvas(int sync)

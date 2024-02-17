@@ -632,19 +632,18 @@ set(DESCENT2_LIBS
 
 find_package(OPENAL)
 find_package(FLUIDSYNTH)
-find_package(SDL2)
+find_package(SDL3)
 
 include_directories(.)
 
-if (SDL2_FOUND)
+if (SDL3_FOUND)
 	add_definitions(-DUSE_SDL)
-	include_directories(${SDL2_INCLUDE_DIRS})
+	include_directories(${SDL3_INCLUDE_DIRS})
 	set(SHARED_SOURCES ${SHARED_SOURCES} ${SDL_SOURCES})
 	if (MINGW)
 		set(SHARED_LIBS ${SHARED_LIBS} "mingw32")
 	endif()
-	set(SHARED_LIBS ${SHARED_LIBS} ${SDL2_MAIN_LIBRARIES})
-	set(SHARED_LIBS ${SHARED_LIBS} ${SDL2_LIBRARIES})
+	set(SHARED_LIBS ${SHARED_LIBS} ${SDL3_LIBRARIES})
 else()
 	set(NOT_COMPILED_SOURCES ${NOT_COMPILED_SOURCES} ${SDL_SOURCES})
 endif()

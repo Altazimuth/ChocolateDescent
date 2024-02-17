@@ -208,7 +208,7 @@ bool I_InitGLContext(SDL_Window *win)
 
 	//The window size is constant, so just do this now
 	int w, h;
-	SDL_GL_GetDrawableSize(win, &w, &h);
+	SDL_GetWindowSizeInPixels(win, &w, &h);
 	sglViewport(0, 0, w, h);
 
 	//Only need one VAO, so create that now

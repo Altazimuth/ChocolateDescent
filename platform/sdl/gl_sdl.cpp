@@ -7,8 +7,8 @@ Instead, it is released under the terms of the MIT License.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "SDL.h"
-#include "SDL_video.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 
 #include "gl_sdl.h"
 #include "2d/gr.h"

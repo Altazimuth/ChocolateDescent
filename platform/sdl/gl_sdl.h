@@ -21,7 +21,7 @@ Instead, it is released under the terms of the MIT License.
 #include <GL/gl.h>
 #endif
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 //Local funcs
 bool I_InitGLContext(SDL_Window* win);

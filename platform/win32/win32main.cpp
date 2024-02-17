@@ -17,7 +17,7 @@ as described in copying.txt.
 #endif
 #include "platform/platform.h"
 
-#include "SDL.h" 
+#include <SDL3/SDL.h> 
 
 int main(int argc, char** argv) //[ISB] oops, must be called with c linkage...
 {

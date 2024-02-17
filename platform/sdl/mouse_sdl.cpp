@@ -6,8 +6,8 @@
 
 #ifdef USE_SDL
 
-#include "SDL_video.h"
-#include "SDL_mouse.h"
+#include <SDL3/SDL_video.h>
+#include <SDL3/SDL_mouse.h>
 
 //variables for relative reads
 int lastReadX = 0, lastReadY = 0;

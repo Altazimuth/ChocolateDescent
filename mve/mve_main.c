@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "mvelib.h"
 

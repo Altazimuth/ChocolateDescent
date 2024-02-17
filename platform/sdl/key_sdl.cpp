@@ -4,8 +4,8 @@
 
 #ifdef USE_SDL
 
-#include "SDL_events.h"
-#include "SDL_keyboard.h"
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_keyboard.h>
 
 //holy crap this sucks
 int translationTable[] =

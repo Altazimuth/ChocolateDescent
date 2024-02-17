@@ -14,12 +14,12 @@ Instead, it is released under the terms of the MIT License.
 
 #ifdef USE_SDL
 
-#include "SDL.h"
-#include "SDL_video.h"
-#include "SDL_surface.h"
-#include "SDL_pixels.h"
-#include "SDL_mouse.h"
-#include "SDL_render.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
+#include <SDL3/SDL_surface.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_render.h>
 
 #include "2d/gr.h"
 #include "platform/platform.h"
@@ -66,7 +66,7 @@ int plat_init()
 {
 	int res;
 
-	res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
+	res = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD);
 	if (res)
 	{
 		Error("Error initalizing SDL: %s\n", SDL_GetError());
@@ -216,7 +216,7 @@ void I_SetScreenRect(int w, int h)
 	else
 	{
 		if (softwareSurf)
-			SDL_FreeSurface(softwareSurf);
+			SDL_DestroySurface(softwareSurf);
 		
 		softwareSurf = SDL_CreateRGBSurface(0, w, h, 32, 0, 0, 0, 0);
 		if (!softwareSurf)
@@ -350,18 +350,18 @@ void plat_do_events()
 			SDL_WindowEvent winEv = ev.window;
 			switch (winEv.event)
 			{
-			case SDL_WINDOWEVENT_FOCUS_GAINED:
-				SDL_FlushEvents(SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP);
+			case SDL_EVENT_WINDOW_FOCUS_GAINED:
+				SDL_FlushEvents(SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_MOUSE_BUTTON_UP);
 				break;
 			}
 		}
-		case SDL_MOUSEBUTTONDOWN:
-		case SDL_MOUSEBUTTONUP:
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+		case SDL_EVENT_MOUSE_BUTTON_UP:
 			I_MouseHandler(ev.button.button, ev.button.state);
 			break;
-		case SDL_KEYDOWN:
-		case SDL_KEYUP:
-			if (ev.key.keysym.scancode == SDL_SCANCODE_RETURN && ev.key.state == SDL_PRESSED && ev.key.keysym.mod & KMOD_ALT)
+		case SDL_EVENT_KEY_DOWN:
+		case SDL_EVENT_KEY_UP:
+			if (ev.key.keysym.scancode == SDL_SCANCODE_RETURN && ev.key.state == SDL_PRESSED && ev.key.keysym.mod & SDL_KMOD_ALT)
 			{
 				Fullscreen ^= 1;
 				plat_toggle_fullscreen();
@@ -371,15 +371,15 @@ void plat_do_events()
 			break;
 			//[ISB] kill this. Descent's joystick code expects buttons to report that they're constantly being held down, and these button events only fire when the state changes
 /*
-		case SDL_CONTROLLERAXISMOTION:
-		case SDL_CONTROLLERBUTTONDOWN:
-		case SDL_CONTROLLERBUTTONUP:
+		case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+		case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+		case SDL_EVENT_GAMEPAD_BUTTON_UP:
 			I_ControllerHandler();
 			break;
-		case SDL_JOYAXISMOTION:
-		case SDL_JOYBUTTONDOWN:
-		case SDL_JOYBUTTONUP:
-		case SDL_JOYHATMOTION:
+		case SDL_EVENT_JOYSTICK_AXIS_MOTION:
+		case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+		case SDL_EVENT_JOYSTICK_BUTTON_UP:
+		case SDL_EVENT_JOYSTICK_HAT_MOTION:
 			I_JoystickHandler();
 			break;*/
 		}

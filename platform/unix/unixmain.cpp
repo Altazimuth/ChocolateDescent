@@ -14,7 +14,7 @@ as described in copying.txt.
 #endif
 #include "platform/platform.h"
 
-#include "SDL.h" //[ISB] required for main replacement macro
+#include <SDL3/SDL_main.h> //[ISB] required for main replacement macro
 
 int main(int argc, char** argv) //[ISB] oops, must be called with c linkage...
 {

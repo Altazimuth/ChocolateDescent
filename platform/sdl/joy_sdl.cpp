@@ -19,15 +19,15 @@ SDL_Gamepad *controller;
 void I_InitSDLJoysticks()
 {
 	int i;
-	numJoysticks = SDL_NumJoysticks();
+	SDL_JoystickID* joystickIDs = SDL_GetJoysticks(&numJoysticks);
 	if (numJoysticks == 0) return; 
 	if (numJoysticks > 2) numJoysticks = 2;
 
 	//Special gamepad handling
-	if (SDL_IsGamepad(0))
+	if (SDL_IsGamepad(*joystickIDs))
 	{
 		usingGamepad = true;
-		controller = SDL_OpenGamepad(0);
+		controller = SDL_OpenGamepad(*joystickIDs);
 		if (!controller)
 		{
 			Warning("I_InitSDLJoysticks: Failed to open game controller: %s\n", SDL_GetError());
@@ -37,13 +37,15 @@ void I_InitSDLJoysticks()
 	{
 		for (i = 0; i < numJoysticks; i++)
 		{
-			joysticks[i] = SDL_OpenJoystick(i);
+			joysticks[i] = SDL_OpenJoystick(joystickIDs[i]);
 			if (!joysticks[i])
 			{
 				Warning("I_InitSDLJoysticks: Failed to open joystick %d: %s\n", i, SDL_GetError());
 			}
 		}
 	}
+
+	SDL_free(joystickIDs);
 }
 
 #define joybtn(x) (1 << x)

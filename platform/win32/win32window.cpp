@@ -690,18 +690,18 @@ void plat_display_error(const char* msg)
 
 // Mouse API:
 
-void mouse_get_pos(int* x, int* y)
+void mouse_get_pos(float* x, float* y)
 {
 	POINT pos = { 0 };
 	GetCursorPos(&pos);
-	*x = pos.x;
-	*y = pos.y;
+	*x = float(pos.x);
+	*y = float(pos.y);
 }
 
-void mouse_get_delta(int* dx, int* dy)
+void mouse_get_delta(float* dx, float* dy)
 {
-	*dx = mousedx;
-	*dy = mousedy;
+	*dx = float(mousedx);
+	*dy = float(mousedy);
 	mousedx = 0;
 	mousedy = 0;
 }
@@ -711,9 +711,9 @@ int mouse_get_btns()
 	return mousebuttons;
 }
 
-void mouse_set_pos(int x, int y)
+void mouse_set_pos(float x, float y)
 {
-	SetCursorPos(x, y);
+	SetCursorPos(int(x), int(y));
 }
 
 #endif

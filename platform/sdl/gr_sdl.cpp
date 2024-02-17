@@ -344,7 +344,7 @@ int plat_set_gr_mode(int mode)
 	return 0;
 }
 
-void I_ScaleMouseToWindow(int* x, int* y)
+void I_ScaleMouseToWindow(float* x, float* y)
 {
 	//printf("in: (%d, %d) ", *x, *y);
 	*x = (*x * screenRectangle.w / CurWindowWidth);

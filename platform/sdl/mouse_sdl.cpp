@@ -10,19 +10,19 @@
 #include <SDL3/SDL_mouse.h>
 
 //variables for relative reads
-int lastReadX = 0, lastReadY = 0;
+float lastReadX = 0, lastReadY = 0;
 
 //[ISB] argh but I don't want this a public function ATM
-extern void I_ScaleMouseToWindow(int* x, int* y);
+extern void I_ScaleMouseToWindow(float* x, float * y);
 
-void mouse_get_pos(int* x, int* y)
+void mouse_get_pos(float* x, float* y)
 {
 	SDL_GetMouseState(x, y);
 	I_ScaleMouseToWindow(x, y);
 	lastReadX = *x; lastReadY = *y;
 }
 
-void mouse_get_delta(int* dx, int* dy)
+void mouse_get_delta(float* dx, float * dy)
 {
 	//hack: still return a delta in case plat_set_mouse_relative_mode hasn't been called
 	if (SDL_GetRelativeMouseMode())
@@ -31,7 +31,7 @@ void mouse_get_delta(int* dx, int* dy)
 	}
 	else
 	{
-		int ldx, ldy;
+		float ldx, ldy;
 		SDL_GetMouseState(&ldx, &ldy);
 		*dx = ldx - lastReadX;
 		*dy = ldy - lastReadY;
@@ -65,7 +65,7 @@ int mouse_get_btns()
 
 //[ISB] Okay I'll be fair, this is a parallax level hack if ever I've seen once
 extern SDL_Window* gameWindow;
-void mouse_set_pos(int x, int y)
+void mouse_set_pos(float x, float y)
 {
 	if (!gameWindow) return;
 	SDL_WarpMouseInWindow(gameWindow, x, y);

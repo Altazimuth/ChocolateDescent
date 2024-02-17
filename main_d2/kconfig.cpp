@@ -1233,7 +1233,7 @@ void kc_change_mouseaxis(kc_item * item)
 {
 	int i, n, k;
 	uint8_t code;
-	int dx, dy;
+	float dx, dy;
 
 	WIN(DDGRLOCK(dd_grd_curcanv));
 	gr_set_fontcolor(BM_XRGB(28, 28, 28), -1);
@@ -1264,8 +1264,8 @@ void kc_change_mouseaxis(kc_item * item)
 		kc_drawquestion(item);
 
 		mouse_get_delta(&dx, &dy);
-		if (abs(dx) > 20) code = 0;
-		if (abs(dy) > 20)	code = 1;
+		if (abs(dx) > 20.0f) code = 0;
+		if (abs(dy) > 20.0f)	code = 1;
 	}
 	if (code != 255) 
 	{
@@ -1420,7 +1420,7 @@ void controls_read_all()
 {
 	int i;
 	int slide_on, bank_on;
-	int dx, dy;
+	float dx, dy;
 	int idx, idy;
 	fix ctime;
 	fix mouse_axis[2];
@@ -1505,8 +1505,8 @@ void controls_read_all()
 	{
 		//---------  Read Mouse -----------
 		mouse_get_delta(&dx, &dy);
-		mouse_axis[0] = (dx * FrameTime) / 35;
-		mouse_axis[1] = (dy * FrameTime) / 25;
+		mouse_axis[0] = fixmul(fl2f(dx), FrameTime) / 35;
+		mouse_axis[1] = fixmul(fl2f(dy), FrameTime) / 25;
 		mouse_buttons = mouse_get_btns();
 		//mprintf(( 0, "Mouse %d,%d b:%d, 0x%x\n", mouse_axis[0], mouse_axis[1], mouse_buttons, FrameTime ));
 		use_mouse = 1;

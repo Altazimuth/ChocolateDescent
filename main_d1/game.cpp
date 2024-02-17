@@ -854,7 +854,7 @@ start_count++;
 
 void game_flush_inputs()
 {
-	int dx, dy;
+	float dx, dy;
 	key_flush();
 	joy_flush();
 	mouse_flush();
